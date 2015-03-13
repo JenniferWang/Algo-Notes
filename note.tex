@@ -1,0 +1,53 @@
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,url}
+\usepackage{bbm}
+%\usepackage{algorithm}
+%\usepackage{algpseudocode} 
+\usepackage{listings}
+\usepackage{pxfonts}
+
+
+\oddsidemargin  0in \evensidemargin 0in \topmargin -0.5in
+\headheight 0.25in \headsep 0.25in
+\textwidth   6.5in \textheight 9in %\marginparsep 0pt \marginparwidth 0pt
+\parskip 1.5ex  \parindent 0ex \footskip 20pt
+\title{Algorithm Miscellany}
+\author{Jiyue Wang \texttt{jiyue@stanford.edu}}
+ 
+\begin{document}
+\lstset{language=Python, 
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries,
+  showstringspaces=false,
+  morekeywords={include, printf}
+}  
+\maketitle
+
+\section{Job Scheduling / Makespan problem}
+Given $m$ machines and $n$ jobs with workload $p_1, ..., p_n$, give a schedule that 
+\[
+  \min_{\text{$m$ machines}} \max \{ \text{workload for a single machine}\}
+\]
+This problem is NP hard. We can use a Greedy algorithm to achieve $4/3$ approximation. If the number of distinct workload is restricted to $k$ , there is a DP solution of $O(n^{2k})$ which gives the exact solution to the corresponding decision problem : Can the $m$ machines finish the job within $T$ times. (Suppose the workload is the time it takes to complete the job for one machine. )
+
+Suppose there are $b_i$ jobs for workload $p_i$, and we have $(b_1, ..., b_k)$ jobs in total. Let $M(c_1, ..., c_k)$ denote the minimum number of machines needed to complete $(c_1, ..., c_k)$ jobs within time $T$. Then it's easy to check whether $M(c_1, ..., c_k) > 1$ and quitely clearly, $M(0, ..., 0) = 0$
+
+\begin{lstlisting}[frame=single]
+for c_1 in range(1, b_1 + 1):
+  for c_2 in range(1, b_2 + 1):
+    ...
+    for c_k in range(1, b_k + 1):
+      if M(c_1, ..., c_k) > 1:
+        S = {(j_1, ..., j_k)| j_i < c_i for all i, M(j_1, ..., j_k) = 1}
+        M(c_1, ..., c_k) = 1 + min(M(c_1 - j_1, ..., c_k - j_k) over S)
+if M(b_1, ..., b_k) > m:
+  return False
+else:
+  return True
+
+\end{lstlisting}
+
+
+\end{document}
