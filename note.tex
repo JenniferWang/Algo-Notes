@@ -14,7 +14,7 @@
 \textwidth   6.5in \textheight 9in %\marginparsep 0pt \marginparwidth 0pt
 \parskip 1.5ex  \parindent 0ex \footskip 20pt
 \title{Algorithm Miscellany}
-\author{Jiyue Wang \texttt{jiyue@stanford.edu}}
+\author{Jiyue Wang (\texttt{jiyue@stanford.edu})}
  
 \begin{document}
 \lstset{language=Python, 
@@ -46,8 +46,14 @@ if M(b_1, ..., b_k) > m:
   return False
 else:
   return True
-
 \end{lstlisting}
 
+\section{(Minimum Weight) Perfect Matching/ Minimum Weight Cycle Cover}
+A \textbf{perfect matching} is a matching which matches all vertices of the graph. That is, every vertex of the graph is incident to exactly one edge of the matching. \footnote{Matching (graph theory), wikipediea} The mini-weight perfect matching problem can be solved in polynomial time. 
+
+A \textbf{minimum weight cycle cover} of a graph is stated as follows. Let $H = (V, E)$ be a directed graph with non-negative arc weights given by $w: E \rightarrow R ^+$. We wish to find a minimum weight collection of vertex-disjoint directed cycles in $H$ such that every vertex is in exactly one of those cycles. \footnote{HW0/6, Spring 2011, CS 598CSC, University of Illinois}. We need this to give an approximation algo to the Asymmetric Traveling Salesman Problem (ATSP).
+
+\textbf{Algorithm}:
+For each node $v \in V$, split it into $v^+$ and $v^-$, where $v^+$ is the `in-node' and $v^-$ is the `out-node'. Solve the minimum perfect matching problem on the new graph. Done.
 
 \end{document}
