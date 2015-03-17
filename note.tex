@@ -1,18 +1,49 @@
-\documentclass[12pt]{article}
-
-\usepackage{graphicx}
-\usepackage{amsmath,amssymb,url}
-\usepackage{bbm}
-%\usepackage{algorithm}
-%\usepackage{algpseudocode} 
+\documentclass[11pt]{article}
+\usepackage{amsmath,amsfonts,amssymb,graphicx}
+\usepackage{fullpage,color}
+\usepackage{url,hyperref}
 \usepackage{listings}
-\usepackage{pxfonts}
+%\usepackage{pxfonts}
 
+\usepackage{algo}
+\pagestyle{empty}
 
-\oddsidemargin  0in \evensidemargin 0in \topmargin -0.5in
-\headheight 0.25in \headsep 0.25in
-\textwidth   6.5in \textheight 9in %\marginparsep 0pt \marginparwidth 0pt
-\parskip 1.5ex  \parindent 0ex \footskip 20pt
+\setlength{\oddsidemargin}{0in}
+\setlength{\topmargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{8.5in}
+
+\newtheorem{fact}{Fact}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}[lemma]{Theorem}
+\newtheorem{defn}[lemma]{Definition}
+\newtheorem{assumption}[lemma]{Assumption}
+\newtheorem{corollary}[lemma]{Corollary}
+\newtheorem{prop}[lemma]{Proposition}
+\newtheorem{claim}[lemma]{Claim}
+\newtheorem{remark}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{eg}{Example}
+
+\newenvironment{note}[1]{\medskip\noindent \textbf{#1:}}%
+        {\medskip}
+
+\newenvironment{proof}{\vspace{-0.05in}\noindent{\bf Proof:}}%
+        {\hspace*{\fill}$\Box$\par}
+\newenvironment{proofsketch}{\noindent{\bf Proof Sketch.}}%
+        {\hspace*{\fill}$\Box$\par\vspace{4mm}}
+\newenvironment{proofof}[1]{\smallskip\noindent{\bf Proof of #1.}}%
+        {\hspace*{\fill}$\Box$\par}
+
+\newcommand{\etal}{{\em et al.}\ }
+\newcommand{\assign}{\leftarrow}
+\newcommand{\eps}{\epsilon}
+
+\newcommand{\opt}{\textrm{\sc OPT}}
+\newcommand{\script}[1]{\mathcal{#1}}
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+
 \title{Algorithm Miscellany}
 \author{Jiyue Wang (\texttt{jiyue@stanford.edu})}
  
@@ -26,34 +57,207 @@
 \maketitle
 
 \section{Job Scheduling / Makespan problem}
-Given $m$ machines and $n$ jobs with workload $p_1, ..., p_n$, give a schedule that 
-\[
-  \min_{\text{$m$ machines}} \max \{ \text{workload for a single machine}\}
-\]
-This problem is NP hard. We can use a Greedy algorithm to achieve $4/3$ approximation. If the number of distinct workload is restricted to $k$ , there is a DP solution of $O(n^{2k})$ which gives the exact solution to the corresponding decision problem : Can the $m$ machines finish the job within $T$ times. (Suppose the workload is the time it takes to complete the job for one machine. )
+  Given $m$ machines and $n$ jobs with workload $p_1, ..., p_n$, give a schedule that 
+    \[
+      \min_{\text{$m$ machines}} \max \{ \text{workload for a single machine}\}
+    \]
+  This problem is NP hard. We can use a Greedy algorithm to achieve $4/3$ approximation(TODO). If the number of distinct workload is restricted to $k$ , there is a DP solution of $O(n^{2k})$ which gives the exact solution to the corresponding decision problem : Can the $m$ machines finish the job within $T$ times. (Suppose the workload is the time it takes to complete the job for one machine. )
 
-Suppose there are $b_i$ jobs for workload $p_i$, and we have $(b_1, ..., b_k)$ jobs in total. Let $M(c_1, ..., c_k)$ denote the minimum number of machines needed to complete $(c_1, ..., c_k)$ jobs within time $T$. Then it's easy to check whether $M(c_1, ..., c_k) > 1$ and quitely clearly, $M(0, ..., 0) = 0$
+  Suppose there are $b_i$ jobs for workload $p_i$, and we have $(b_1, ..., b_k)$ jobs in total. Let $M(c_1, ..., c_k)$ denote the minimum number of machines needed to complete $(c_1, ..., c_k)$ jobs within time $T$. Then it's easy to check whether $M(c_1, ..., c_k) > 1$ and quitely clearly, $M(0, ..., 0) = 0$
 
-\begin{lstlisting}[frame=single]
-for c_1 in range(1, b_1 + 1):
-  for c_2 in range(1, b_2 + 1):
-    ...
-    for c_k in range(1, b_k + 1):
-      if M(c_1, ..., c_k) > 1:
-        S = {(j_1, ..., j_k)| j_i < c_i for all i, M(j_1, ..., j_k) = 1}
-        M(c_1, ..., c_k) = 1 + min(M(c_1 - j_1, ..., c_k - j_k) over S)
-if M(b_1, ..., b_k) > m:
-  return False
-else:
-  return True
-\end{lstlisting}
+  \begin{lstlisting}[frame=single]
+    for c_1 in range(1, b_1 + 1):
+      for c_2 in range(1, b_2 + 1):
+        ...
+        for c_k in range(1, b_k + 1):
+          if M(c_1, ..., c_k) > 1:
+            S = {(j_1, ..., j_k)| j_i < c_i for all i, M(j_1, ..., j_k) = 1}
+            M(c_1, ..., c_k) = 1 + min(M(c_1 - j_1, ..., c_k - j_k) over S)
+    if M(b_1, ..., b_k) > m:
+      return False
+    else:
+    return True
+  \end{lstlisting}
+
+\section{Knapsack Problem}
+  Given a knapsack capacity $B$, and a set $N$ of $n$ items. Each item has a weight $w_i \ge 0$ and a profit $p_i \ge$. The goal is to find a subset of the items $S \subset N$ s.t. $w(S) = \sum_{i \in S} w_i \le B$ and $p(S) = \sum_{i \in S} p_i$ is maximized. 
+
+  If we further assume that the profits and weights are integers, we can find a dynamic programming solution to the problem in either $O(nB)$ or $O(nP)$ time, where $P = \sum_{i \in N}p_i$. Even so, it gives a pseudo-polynomial time algorithm and the problem is still NP-hard.
+
+  \begin{algo}
+    Let profit[i][b] be the maximum profit we can get given item $1, 2, ..., i$ and capacity $b$.\\
+    initilize profit with profit[0][0] = 0\\
+    for i in range(1, n + 1): \\
+      for b in range(1, B + 1): \\
+        if $w_i$ > b: \\
+          profit[i][b] = profit[i - 1][b] \\
+        else: \\
+          profit[i][b] = max(profit[i - 1][b], profit[i][b - $w_i$] + $w_i$) \\
+    return profit[n][B] 
+  \end{algo}
 
 \section{(Minimum Weight) Perfect Matching/ Minimum Weight Cycle Cover}
-A \textbf{perfect matching} is a matching which matches all vertices of the graph. That is, every vertex of the graph is incident to exactly one edge of the matching. \footnote{Matching (graph theory), wikipediea} The mini-weight perfect matching problem can be solved in polynomial time. 
+  A \textbf{perfect matching} is a matching which matches all vertices of the graph. That is, every vertex of the graph is incident to exactly one edge of the matching. \footnote{Matching (graph theory), wikipediea} The mini-weight perfect matching problem can be solved in polynomial time. 
 
-A \textbf{minimum weight cycle cover} of a graph is stated as follows. Let $H = (V, E)$ be a directed graph with non-negative arc weights given by $w: E \rightarrow R ^+$. We wish to find a minimum weight collection of vertex-disjoint directed cycles in $H$ such that every vertex is in exactly one of those cycles. \footnote{HW0/6, Spring 2011, CS 598CSC, University of Illinois}. We need this to give an approximation algo to the Asymmetric Traveling Salesman Problem (ATSP).
+  A \textbf{minimum weight cycle cover} of a graph is stated as follows. Let $H = (V, E)$ be a directed graph with non-negative arc weights given by $w: E \rightarrow R ^+$. We wish to find a minimum weight collection of vertex-disjoint directed cycles in $H$ such that every vertex is in exactly one of those cycles. \footnote{HW0/6, Spring 2011, CS 598CSC, University of Illinois}. We need this to give an approximation algo to the Asymmetric Traveling Salesman Problem (ATSP).
 
-\textbf{Algorithm}:
-For each node $v \in V$, split it into $v^+$ and $v^-$, where $v^+$ is the `in-node' and $v^-$ is the `out-node'. Solve the minimum perfect matching problem on the new graph. Done.
+  \textbf{Algorithm}:
+  For each node $v \in V$, split it into $v^+$ and $v^-$, where $v^+$ is the `in-node' and $v^-$ is the `out-node'. Solve the minimum perfect matching problem on the new graph. Done.
+
+\section{Matroids}
+  \subsection{Definitions}
+    A matroid $M = (E, I)$ is defined on a ground set $E$ and an independent set $I$, where $I$ is a collection of subsets of $E$ and $I$ must satisfy two axioms:
+    \begin{itemize}
+      \item If $X \subseteq Y$, and $Y \in I$, then $X \in I$
+      \item If $X, Y \in I$ and $|Y| > |X|$, then $\exists e \in Y\backslash X$, s.t. $X \cup \{e\} \in I$
+    \end{itemize}
+    
+    \begin{remark}
+      Each \textbf{maximal} independent set in $I$ has the same cardinality. We call such independent set \textbf{base}.
+    \end{remark}
+
+    \begin{eg}
+      \textbf{Graphic Matroids}: Given a graph $G = (V, E)$, define the independent set to be thoses subsets of edges which are forests. 
+    \end{eg}
+    \begin{proof}
+      \begin{itemize}
+        \item If $Y \in I$ is a forest, then $\forall X \subseteq Y$ has no circle, indicating that $X \in I$
+        \item For $Y \in I$, let $K(Y)$ denote the number of connected components of $Y$ (each isolated vertex is regarded as one component), then $K(Y) = |V| - |Y|$. Thus, if $X, Y \in I$ and $|X| < |Y|$, then $K(X) > K(Y)$. We can always find an edge $e \in Y \backslash X$ which connects two components in $X$ and we still have $\{e\} \cup X \in I$
+      \end{itemize}
+    \end{proof}
+
+  \subsection{Matroid Optimization}
+    Given a matroid $M = (E, I)$ and a cost function $c : E \rightarrow \mathbb{R}$, find $S \in I$ which maximizes $c(S) = \sum_{e \in S} c(e)$. If the cost is nonnegative, then it's equivalent to find the maximum cost base of $I$. If there is a negative $e$, then it cannot appear in the optimal set, thus we can simply remove it. 
+
+    \begin{remark}
+      If we think of this problem on graphic matroids, this is exactly the same as finding the maximum spanning tree (solved by greedy algo).
+    \end{remark}
+
+    Similar to the algo for finding MST, we can solve this problem using the greedy algorithm :
+
+    \begin{algo}
+      Sort the elements s.t. $c(e_1) \ge c(e_2) \ge ... \ge c(e_{|M|})$ \\
+      $S_0 = \varnothing$; k = 0 \\
+      res = []\\
+      for j in range(1, |E| + 1): \\
+        if $S_{k} + e_j \in I$ : \\
+          k += 1 \\
+          $S_k = S_{k - 1} + e_j$ \\
+          res.append($e_j$) \\
+      return res
+    \end{algo}
+
+    \begin{theorem}
+      For any matroid $M = (E,I)$, the greedy algorithm above finds, for every $k$, an independent set $S_k$ of maximum cost among all independent sets of size $k$.
+    \end{theorem}
+    \begin{proof}
+      Denote the edges in res as $e_1, ..., e_k$. Suppose not, let $S_k = \{e_1, ..., e_k\}$ with $c(e_1) \ge c(e_2) ... \ge c(e_k)$ and suppose $T_k$ has greater cost, where $T_k = \{t_1, ..., t_k\}$ (as optimal is a base, $|T_k| = k$. Let $p$ be the first index s.t. $c(t_p) > c(e_p)$. Let $A = \{t_1, ..., t_p\}$, $B = \{e_1, ..., e_{p - 1}\}$. Since $|A| > |B|$, there exists $t_i \notin B$ s.t. $t_i + B \in I$, since $t_i \ge t_p > e_p$, $t_i$ should be selected when we are choosing $e_p$.
+    \end{proof}
+
+    \begin{remark}
+      The greedy algorithm actually characterizes matroids. If $M$ is an independence system, i.e. it satisfies (Axiom 1), then $M$ is a matroid iff the greedy algo finds a maximum cost set of size $k$ for every $k$ and every cost function.
+    \end{remark}
+
+    Here is a \textbf{not that related problem}: Given a Minimum Spanning Tree $T = \{e_1, ..., e_{n - 1}\}$ of a graph $G = (V, E)$, find the second-minimum spanning tree of $G$.
+
+    The straight forward approach is to delete each edge in $T$ and run the MST algorithm. This repeats n - 1 times, then pick the minimum. The greedy MST algo takes $O(n^2 \log n)$ time, so the total is $(n^3 \log n)$
+
+    What about just delete one edge in $T$ and try the rest of the edges and see if it's the second-MST. This should cost $O(n^3)$. As when we delete an edge, we are left with two spanning trees, which should be the corresponding MST in each subgraph. We just need to find another bridge to connect the two trees.
+
+
+
+  \subsection{Totally Unimodular Matrices(TUM)}
+    A matrix $A$ is \textbf{TUM} if every square submatrix $M$ of $A$ has $\det(M) \in \{+1, -1, 0\}$. This indicates every entry of $A$ should be +1, -1 or 0. 
+
+    \textbf{Example 1} Incidence matrix of a directed graph 
+
+    \textbf{Proof} Suppose the incidence matrix $S \in R ^{|V| \times |E|}$ and  $e = (u, v) \in E$ iff $M_{ue} = 1 \land M_{ve} = -1 $, Use induction on the size $n$ of the submatrix $M$. When $n = 1$, it's trivial. When $n > 1$, there are three cases.  
+      \begin{itemize}
+        \item Some column of $M$ is all zero, then $\det(M) = 0$
+        \item Some column of $M$ has only one of $\{+1, -1\}$, then induce on $n - 1$
+        \item All columns of $M$ has two entries 1 and -1. Then the row sum yields \textbf{0}, indicating that $\det(M) = 0$
+      \end{itemize}
+
+    \textbf{Example 2} A graph is bipartite iff its incidence matrix is TUM. (Here we should redefine the incidence matrix)
+
+    \textbf{Proof} 
+    $\Leftarrow$: If the graph contains an odd cycle, the submatrix corresponding to the cycle has determinant 2, contradiction.
+
+    $\Rightarrow$: Prove by induction. The first two cases are trivial and the same as Example 1. The last case is when all columns of $M$ has exactly two 1. Now permutate the rows to split $M$ into two halves, each representing a group. Now we can multiply the bottom half with -1 to make it a directed graph. Multiplying rows by -1 only changes the sign of the determinant of $M$. We then apply the result from example 1 to finish the proof.
+
+\section{Traveling Salesman's Problem}
+  \subsection{Undirected Version}
+    Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?\footnote{wiki}. This problem is NP-hard as if we have a blackbox solving TSP, we could decide the Hamiltonian cycle in an undirected graph $G$. 
+    
+    \begin{proof}
+      Given a graph $G = (V, E)$, we construct a new weighted \textbf{complete} graph $G' = (V, E', W)$ as follows: 
+      $w(u, v) = \inf$ if $(u, v) \notin E$, else $w(u, v) = 1$. If the TSP on $G'$ returns $|E|$, then it finds a Hamiltonian cycle in the original graph $G$; if not, there is no Hamiltonian cycle in $G$.
+    \end{proof}
+
+    Actually, we cannot have a very good approximation to TSP. If we have an approximation algorithm $A$ for TSP with an approximation ratio $\alpha(|I|)$ ($I$ is an instance of TSP), then we can exactly solve the Hamiltonian cycle problem. \footnote{\url{https://courses.engr.illinois.edu/cs598csc/sp2011/lectures/lecture_2.pdf}}
+
+    We can relax conditions to get better approximation (actually the following two are equivalent)
+    \begin{itemize}
+      \item Metric-TSP, where cost of edge satisfies $c(u, v) \le c(u, w) + c(w, v)$ for $\forall u, v, w \in V$.
+      \item TSP-R, where repitition of vertices allowed. Thus instead of finding a minimum weight Hamiltonian cycle, we now seek a minimum-cost walk which visits each vertex and return to the starting vertex in the end. 
+    \end{itemize}
+
+    Up to now, Christofides' MST-based algorithm gives the best approximation ratio (3/ 2 - approximation) on Metric-TSP. 
+
+  \subsection{Directed Version: Asymmetric TSP}
+    We can think of this problem as aysmmetric traffic: it could take more time to travel from $A$ to $B$ than from $B$ to $A$. In this scenario, a MST-based algorithm is no longer helpful. Here use a Cycle Shrinking Algorithm ($\log_2n$-apprximation, prove by induction)
+
+\section{Vertex Cover}
+  \subsection{Minimum Vertex Cover (connected graph)}
+    \textbf{Algorithm}:
+
+      Find a \textbf{maximal matching} $M$ in graph $G$. Then output the endpoints of edges in $M$, denoted as 
+      \[
+        S = \cup_{(u, v) \in M}\{u, v\} 
+      \]
+    \textbf{Analysis}:
+
+      This is a 2-approximation. The first inequality below is critical
+      \[
+        |M| \le OPT \le |S| \le 2 |M| \le 2 OPT
+      \]
+
+  \subsection{Minimum Weight Vertex Cover}
+    Use Linear Programming Approximation
+    
+    TODO
+
+\section{Max Cut}
+  \subsection{Deterministic Greedy Algorithm}
+    \textbf{Algorithm}:
+    \begin{lstlisting}[frame=single]
+      Let V = {v_0}
+      while There exists v s.t. moving v to the other side increases cut size:
+        move v to the other side
+
+      Output 2 sets
+    \end{lstlisting}
+
+    \textbf{Analysis}:
+
+      This is a 1/2-approximation algo. As for each vertex $v$, at least half of the incident edges contribute to the cut. (otherwise, it will be in the other set). Thus 
+      \[
+        \begin{split}
+          & GreedyOPT \ge \frac{1}{2}\sum_{v \in V} \frac{d(v)}{2} = \frac{|E|}{2}\\
+          & OPT \le |E|\\
+          \Rightarrow & GreedyOPT \ge \frac{1}{2}OPT %TODO
+        \end{split}
+      \]
+
+  \subsection{Semidefinite Programming Approximation}
+    TODO
+    \begin{itemize}
+      \item Solve the SDP and get $X$
+      \item Do Cholesky factorization on $X$ to get $V$
+      \item Now convert $V$ back to the original problem. The intuition is that if $X_{ij} = v_i \cdot v_j$ is close to -1, then we should make the cut. In this algorithm, we round $v_i$ to +1 or -1 by a Random Hyperplane algorithm.
+    \end{itemize}
+    \textbf{Analysis}:
+
+      This is a randomized approximation algorithm. We have $E[cut]\ge 0.878 OPT$.
 
 \end{document}
